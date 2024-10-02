@@ -28,13 +28,21 @@ const schema = z.object({
     .refine((cpf) => sanitizeInput(cpf).length === 11, {
       message: "CPF inválido",
     }),
+  telefone: z.string()
+    .max(15, "Celular no máximo 15 dígitos")
+    .min(11, "Celular no mínimo 11 dígitos"),
+
+  cep: z.string().min(8, "CEP é obrigatorio"),
   cidade: z.string().min(1, "Cidade é obrigatória"),
-  bairro: z.string().min(1, "Bairro é obrigatório"),
+  enderecoCompleto: z.string().min(1, "Endereço completo é obrigatório"),
   nomeDaMae: z.string().min(1, "Nome da mãe é obrigatório"),
   nomeDoPai: z.string().min(1, "Nome do pai é obrigatório"),
   contaCorrente: z.string().min(1, "Conta Corrente é obrigatório"),
   racaOuCor: z.enum(["Branco", "Negro", "Pardo", "Indígena", "Amarelo"], {
     required_error: "Raça/Cor é obrigatória",
+  }),
+  sexo: z.enum(["Masculino", "Feminino"], {
+    required_error: "Sexo é obrigatório",
   }),
   estadoCivil: z.enum(["Solteiro", "Casado", "Divorciado", "Viúvo"], {
     required_error: "Estado Civil é obrigatório",
@@ -42,12 +50,12 @@ const schema = z.object({
   escolaridade: z.enum(
     [
       "Analfabeto",
-      "FundamentalIncompleto",
-      "FundamentalCompleto",
-      "MedioIncompleto",
-      "MedioCompleto",
-      "SuperiorIncompleto",
-      "SuperiorCompleto",
+      "Fundamental Incompleto",
+      "Fundamental Completo",
+      "Medio Incompleto",
+      "Medio Completo",
+      "Superior Incompleto",
+      "Superior Completo",
     ],
     {
       required_error: "Escolaridade é obrigatória",
@@ -80,7 +88,7 @@ export interface MyFormData {
   racaOuCor: string;
   nomeDoPai: string;
   nomeDaMae: string;
-  bairro: string;
+  enderecoCompleto: string;
   cidade: string;
   cpf: string;
   dataDeNascimento: string;
@@ -88,6 +96,9 @@ export interface MyFormData {
   email: string;
   nome: string;
   contaCorrente: string
+  cep: string
+  sexo: string
+  telefone: number
 }
 
 export default function Home() {
@@ -122,7 +133,6 @@ export default function Home() {
   const handleRaceChange = (event: any) => {
     setValue("racaOuCor", event);
   };
-
 
   return (
     <>
@@ -183,6 +193,20 @@ export default function Home() {
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message as string}</p>}
             </div>
             <div>
+              <label htmlFor="telefone" className="text-lg font-medium text-gray-800">
+                Telefone <span className="text-red-500">*</span>
+              </label>
+              <TextInput
+                type="number"
+                id="telefone"
+                placeholder="(XX) XXXXX-XXXX"
+                {...register("telefone")}
+                error={errors.telefone ? true : false}
+                maxLength={15}
+              />
+              {errors.telefone && <p className="text-red-500 text-sm mt-1">{errors.telefone.message as string}</p>}
+            </div>
+            <div>
               <label htmlFor="rg" className="text-lg font-medium text-gray-800">
                 Carteira de Identidade (RG) <span className="text-red-500">*</span>
               </label>
@@ -218,12 +242,12 @@ export default function Home() {
 
             <div>
               <label htmlFor="cidade" className="text-lg font-medium text-gray-800">
-                Cidade <span className="text-red-500">*</span>
+                Local de nascimento <span className="text-red-500">*</span>
               </label>
               <TextInput
                 type="text"
                 id="cidade"
-                placeholder="Informe sua cidade"
+                placeholder="Informe seu local de nascimento"
                 {...register("cidade")}
                 error={errors.cidade ? true : false}
               />
@@ -233,22 +257,39 @@ export default function Home() {
             </div>
 
             <div>
-              <label htmlFor="bairro" className="text-lg font-medium text-gray-800">
-                Bairro <span className="text-red-500">*</span>
+              <label htmlFor="enderecoCompleto" className="text-lg font-medium text-gray-800">
+                Endereço completo <span className="text-red-500">*</span>
+              </label>
+              <TextInput
+                type="text"
+                id="enderecoCompleto"
+                placeholder="Informe seu endereço completo"
+                {...register("enderecoCompleto")}
+                error={errors.enderecoCompleto ? true : false}
+
+              />
+              {errors.enderecoCompleto && (
+                <p className="text-red-500 text-sm mt-1">{errors.enderecoCompleto.message as string}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="cep" className="text-lg font-medium text-gray-800">
+                CEP <span className="text-red-500">*</span>
               </label>
               <TextInput
                 type="text"
                 id="bairro"
-                placeholder="Informe seu bairro"
-                {...register("bairro")}
-                error={errors.bairro ? true : false}
-
+                placeholder="Informe seu CEP"
+                {...register("cep")}
+                error={errors.cep ? true : false}
+                minLength={8}
+                maxLength={8}
               />
-              {errors.bairro && (
-                <p className="text-red-500 text-sm mt-1">{errors.bairro.message as string}</p>
+              {errors.cep && (
+                <p className="text-red-500 text-sm mt-1">{errors.cep.message as string}</p>
               )}
             </div>
-
             <div>
               <label htmlFor="nomeDaMae" className="text-lg font-medium text-gray-800">
                 Nome da mãe <span className="text-red-500">*</span>
@@ -315,16 +356,40 @@ export default function Home() {
                 value={watch("escolaridade") || ""}
                 error={errors.escolaridade ? true : false}
               >
+                <SelectItem value="Fundamental Completo">Ensino Fundamental Completo</SelectItem>
                 <SelectItem value="Analfabeto">Analfabeto</SelectItem>
                 <SelectItem value="Fundamental Incompleto">Até 4ª Série Incompleto</SelectItem>
-                <SelectItem value="Fundamental Completo">Ensino Fundamental Completo</SelectItem>
                 <SelectItem value="Medio Incompleto">Ensino Médio Incompleto</SelectItem>
                 <SelectItem value="Medio Completo">Ensino Médio Completo</SelectItem>
                 <SelectItem value="Superior Incompleto">Ensino Superior Incompleto</SelectItem>
                 <SelectItem value="Superior Completo">Ensino Superior Completo</SelectItem>
+                <SelectItem value="Pós">Pós</SelectItem>
+                <SelectItem value="Graduação">Graduação</SelectItem>
+                <SelectItem value="Mestrado">Mestrado</SelectItem>
+
               </Select>
               {errors.escolaridade && (
                 <p className="text-red-500 text-sm mt-1">{errors.escolaridade.message as string}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="sexo" className="text-lg font-medium text-gray-800">
+                Sexo <span className="text-red-500">*</span>
+              </label>
+              <Select
+                id="sexo"
+                {...register("sexo")}
+                placeholder="Selecione seu sexo"
+                onChange={handleRaceChange}
+                value={watch("sexo") || ""}
+                error={errors.sexo ? true : false}
+              >
+                <SelectItem value="Masculino">Masculino</SelectItem>
+                <SelectItem value="Feminino">Feminino</SelectItem>
+              </Select>
+              {errors.sexo && (
+                <p className="text-red-500 text-sm mt-1">{errors.sexo.message as string}</p>
               )}
             </div>
 
@@ -340,7 +405,6 @@ export default function Home() {
                 value={watch("racaOuCor") || ""}
                 error={errors.racaOuCor ? true : false}
               >
-                <SelectItem value="">Selecione sua raça/cor</SelectItem>
                 <SelectItem value="Branco">Branco</SelectItem>
                 <SelectItem value="Negro">Negro</SelectItem>
                 <SelectItem value="Pardo">Pardo</SelectItem>
@@ -354,12 +418,12 @@ export default function Home() {
 
             <div>
               <label htmlFor="contaCorrente" className="text-lg font-medium text-gray-800">
-                Conta corrente <span className="text-red-500">*</span>
+                Conta corrente Banco Santander <span className="text-red-500">*</span>
               </label>
               <TextInput
                 type="text"
                 id="contaCorrente"
-                placeholder="Informe sua conta corrente"
+                placeholder="Informe sua conta corrente do Banco Santander"
                 {...register("contaCorrente")}
                 error={errors.contaCorrente ? true : false}
 

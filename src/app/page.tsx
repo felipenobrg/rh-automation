@@ -8,7 +8,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CpfInput from "@/components/input-component/CpfInput/CpfInput";
 
-export const sanitizeInput = (input: string) => input.replace(/[^\d]/g, "");
+const sanitizeInput = (input: string) => input.replace(/[^\d]/g, "");
 
 const schema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),

@@ -10,12 +10,17 @@ import CpfInput from "@/components/input-component/CpfInput/CpfInput";
 
 const sanitizeInput = (input: string) => input.replace(/[^\d]/g, "");
 
+const dateRegex = /^(0[1-9]|[12][0-9]|3[01])(0[1-9]|1[0-2])\d{4}$/;
+
 const schema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
   email: z.string().email("Email inválido"),
   dataDeNascimento: z
     .string()
-    .min(8, "Data de nascimento é obrigatória e deve ter mínimo 7 caracteres"),
+    .min(8, "Data de nascimento é obrigatória e deve ter mínimo 8 caracteres")
+    .refine((data) => dateRegex.test(data), {
+      message: "Data de nascimento inválida, deve estar no formato DDMMYYYY",
+    }),
   rg: z.string().min(7, "RG é obrigatório e deve ter no mínimo 7 caracteres"),
   cpf: z
     .string()
@@ -52,6 +57,7 @@ const schema = z.object({
     .any()
     .refine((files) => files?.length > 0, "Você deve selecionar pelo menos um arquivo"),
 });
+
 
 const documents = [
   "Carteira Digital de Trabalho (Página inicial e último trabalho)",
@@ -102,8 +108,6 @@ export default function Home() {
     for (let i = 0; i < files.length; i++) {
       console.log("Arquivo selecionado:", files[i]);
     }
-
-    console.log("result");
   };
 
   const handleStatusCivilChange = (event: any) => {
@@ -310,15 +314,14 @@ export default function Home() {
                 onChange={handleEscolaridadeChange}
                 value={watch("escolaridade") || ""}
                 error={errors.escolaridade ? true : false}
-
               >
                 <SelectItem value="Analfabeto">Analfabeto</SelectItem>
-                <SelectItem value="FundamentalIncompleto">Até 4ª Série Incompleto</SelectItem>
-                <SelectItem value="FundamentalCompleto">Ensino Fundamental Completo</SelectItem>
-                <SelectItem value="MedioIncompleto">Ensino Médio Incompleto</SelectItem>
-                <SelectItem value="MedioCompleto">Ensino Médio Completo</SelectItem>
-                <SelectItem value="SuperiorIncompleto">Ensino Superior Incompleto</SelectItem>
-                <SelectItem value="SuperiorCompleto">Ensino Superior Completo</SelectItem>
+                <SelectItem value="Fundamental Incompleto">Até 4ª Série Incompleto</SelectItem>
+                <SelectItem value="Fundamental Completo">Ensino Fundamental Completo</SelectItem>
+                <SelectItem value="Medio Incompleto">Ensino Médio Incompleto</SelectItem>
+                <SelectItem value="Medio Completo">Ensino Médio Completo</SelectItem>
+                <SelectItem value="Superior Incompleto">Ensino Superior Incompleto</SelectItem>
+                <SelectItem value="Superior Completo">Ensino Superior Completo</SelectItem>
               </Select>
               {errors.escolaridade && (
                 <p className="text-red-500 text-sm mt-1">{errors.escolaridade.message as string}</p>
@@ -351,7 +354,7 @@ export default function Home() {
 
             <div>
               <label htmlFor="contaCorrente" className="text-lg font-medium text-gray-800">
-                Conta corrente
+                Conta corrente <span className="text-red-500">*</span>
               </label>
               <TextInput
                 type="text"

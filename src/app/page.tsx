@@ -14,8 +14,8 @@ const schema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
   email: z.string().email("Email inválido"),
   dataDeNascimento: z
-    .string(),
-
+    .string()
+    .min(8, "Data de nascimento é obrigatória e deve ter mínimo 7 caracteres"),
   rg: z.string().min(7, "RG é obrigatório e deve ter no mínimo 7 caracteres"),
   cpf: z
     .string()
@@ -155,7 +155,7 @@ export default function Home() {
               </label>
               <TextInput
                 id="dataDeNascimento"
-                placeholder="DD/MM/YYYY"
+                placeholder="DDMMYYYY"
                 {...register("dataDeNascimento")}
                 minLength={8}
                 maxLength={8}

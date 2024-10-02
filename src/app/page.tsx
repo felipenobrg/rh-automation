@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Header } from "@/components/layout-component/Header";
 import { Button, Select, SelectItem, TextInput } from "@tremor/react";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import CpfInput from "@/components/input-component/CpfInput/CpfInput";
+
 
 const schema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
@@ -21,6 +24,7 @@ const schema = z.object({
   bairro: z.string().min(1, "Bairro é obrigatório"),
   nomeDaMae: z.string().min(1, "Nome da mãe é obrigatório"),
   nomeDoPai: z.string().min(1, "Nome do pai é obrigatório"),
+  contaCorrente: z.string().min(1, "Conta Corrente é obrigatório"),
   racaOuCor: z.enum(["Branco", "Negro", "Pardo", "Indígena", "Amarelo"], {
     required_error: "Raça/Cor é obrigatória",
   }),
@@ -45,6 +49,7 @@ const schema = z.object({
     .any()
     .refine((files) => files?.length > 0, "Você deve selecionar pelo menos um arquivo"),
 });
+
 const documents = [
   "Carteira Digital de Trabalho (Página inicial e último trabalho)",
   "Carteira de Identidade (RG)",
@@ -59,6 +64,23 @@ const documents = [
   "Conta Corrente Banco Santander (Se já possuir)"
 ];
 
+export interface MyFormData {
+  arquivos: FileList;
+  estadoCivil: string;
+  escolaridade: string;
+  racaOuCor: string;
+  nomeDoPai: string;
+  nomeDaMae: string;
+  bairro: string;
+  cidade: string;
+  cpf: string;
+  dataDeNascimento: string;
+  rg: string;
+  email: string;
+  nome: string;
+  contaCorrente: string
+}
+
 export default function Home() {
   const {
     register,
@@ -66,32 +88,35 @@ export default function Home() {
     watch,
     setValue,
     formState: { errors },
-  } = useForm({
+  } = useForm<MyFormData>({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = (data: { files: any; }) => {
+  const onSubmit: SubmitHandler<MyFormData> = (data: MyFormData) => {
     console.log("Form data:", data);
-    const files = data.files;
+    const files = data.arquivos;
 
     for (let i = 0; i < files.length; i++) {
       console.log("Arquivo selecionado:", files[i]);
     }
 
-    console.log("result")
+    console.log("result");
   };
 
-  const handleCivilStatusChange = (event: any) => {
-    setValue("estadoCivil", event);
+  const handleStatusCivilChange = (event: any) => {
+    setValue("escolaridade", event);
   };
+
 
   const handleEscolaridadeChange = (event: any) => {
     setValue("escolaridade", event);
   };
 
   const handleRaceChange = (event: any) => {
+    console.log("Event", event)
     setValue("racaOuCor", event);
   };
+
 
   return (
     <>
@@ -117,6 +142,8 @@ export default function Home() {
                 id="nome"
                 placeholder="Informe seu nome"
                 {...register("nome")}
+                error={errors.nome ? true : false}
+
               />
               {errors.nome && <p className="text-red-500 text-sm mt-1">{errors.nome.message as string}</p>}
             </div>
@@ -126,7 +153,12 @@ export default function Home() {
               </label>
               <TextInput
                 id="dataDeNascimento"
-                {...register("dataDeNascimento", { required: "Data de Nascimento é obrigatória" })}
+                placeholder="DD/MM/YYYY"
+                {...register("dataDeNascimento")}
+                minLength={8}
+                maxLength={8}
+                error={errors.dataDeNascimento ? true : false}
+
               />
               {errors.dataDeNascimento && <p className="text-red-500 text-sm mt-1">{errors.dataDeNascimento.message as string}</p>}
             </div>
@@ -139,6 +171,8 @@ export default function Home() {
                 id="email"
                 placeholder="Informe seu email"
                 {...register("email")}
+                error={errors.email ? true : false}
+
               />
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message as string}</p>}
             </div>
@@ -151,6 +185,10 @@ export default function Home() {
                 id="rg"
                 placeholder="Informe seu RG"
                 {...register("rg")}
+                minLength={9}
+                maxLength={9}
+                error={errors.rg ? true : false}
+
               />
               {errors.rg && (
                 <p className="text-red-500 text-sm mt-1">{errors.rg.message as string}</p>
@@ -160,11 +198,12 @@ export default function Home() {
               <label htmlFor="cpf" className="text-lg font-medium text-gray-800">
                 CPF <span className="text-red-500">*</span>
               </label>
-              <TextInput
-                type="text"
-                id="cpf"
-                placeholder="Informe seu CPF"
-                {...register("cpf")}
+              <CpfInput
+                register={register}
+                name="cpf"
+                value={watch("cpf")}
+                setValue={setValue}
+                error={errors.cpf ? true : false}
               />
               {errors.cpf && (
                 <p className="text-red-500 text-sm mt-1">{errors.cpf.message as string}</p>
@@ -180,6 +219,7 @@ export default function Home() {
                 id="cidade"
                 placeholder="Informe sua cidade"
                 {...register("cidade")}
+                error={errors.cidade ? true : false}
               />
               {errors.cidade && (
                 <p className="text-red-500 text-sm mt-1">{errors.cidade.message as string}</p>
@@ -195,6 +235,8 @@ export default function Home() {
                 id="bairro"
                 placeholder="Informe seu bairro"
                 {...register("bairro")}
+                error={errors.bairro ? true : false}
+
               />
               {errors.bairro && (
                 <p className="text-red-500 text-sm mt-1">{errors.bairro.message as string}</p>
@@ -210,6 +252,8 @@ export default function Home() {
                 id="nomeDaMae"
                 placeholder="Informe o nome da sua mãe"
                 {...register("nomeDaMae")}
+                error={errors.nomeDaMae ? true : false}
+
               />
               {errors.nomeDaMae && (
                 <p className="text-red-500 text-sm mt-1">{errors.nomeDaMae.message as string}</p>
@@ -224,6 +268,7 @@ export default function Home() {
                 id="nomeDoPai"
                 placeholder="Informe o nome do seu pai"
                 {...register("nomeDoPai")}
+                error={errors.nomeDoPai ? true : false}
 
               />
               {errors.nomeDoPai && (
@@ -238,8 +283,9 @@ export default function Home() {
                 id="estadoCivil"
                 {...register("estadoCivil")}
                 placeholder="Selecione seu estado civil"
-                onChange={handleCivilStatusChange}
+                onChange={handleStatusCivilChange}
                 value={watch("estadoCivil") || ""}
+                error={errors.estadoCivil ? true : false}
 
               >
                 <SelectItem value="Solteiro">Solteiro</SelectItem>
@@ -261,6 +307,7 @@ export default function Home() {
                 placeholder="Selecione sua escolaridade"
                 onChange={handleEscolaridadeChange}
                 value={watch("escolaridade") || ""}
+                error={errors.escolaridade ? true : false}
 
               >
                 <SelectItem value="Analfabeto">Analfabeto</SelectItem>
@@ -286,7 +333,7 @@ export default function Home() {
                 placeholder="Selecione sua raça/cor"
                 onChange={handleRaceChange}
                 value={watch("racaOuCor") || ""}
-
+                error={errors.racaOuCor ? true : false}
               >
                 <SelectItem value="">Selecione sua raça/cor</SelectItem>
                 <SelectItem value="Branco">Branco</SelectItem>
@@ -309,6 +356,8 @@ export default function Home() {
                 id="contaCorrente"
                 placeholder="Informe sua conta corrente"
                 {...register("contaCorrente")}
+                error={errors.contaCorrente ? true : false}
+
               />
               {errors.contaCorrente && (
                 <p className="text-red-500 text-sm mt-1">{errors.contaCorrente.message as string}</p>

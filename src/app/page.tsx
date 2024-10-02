@@ -380,7 +380,6 @@ export default function Home() {
               <p className="mt-2 text-sm text-gray-600">Você pode fazer upload de múltiplos arquivos PDF, JPG, PNG, ou DOCX.</p>
             </div>
           </div>
-          {errors && <p className="text-red-500 text-sm mt-1">Erro ao enviar o formulário. Por favor, verifique suas informações</p>}
           <div className="mt-8 flex items-center justify-center space-x-6">
             <Button type="submit" variant="primary">
               Enviar

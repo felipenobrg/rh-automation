@@ -8,18 +8,21 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CpfInput from "@/components/input-component/CpfInput/CpfInput";
 
+export const sanitizeInput = (input: string) => input.replace(/[^\d]/g, "");
 
 const schema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
   email: z.string().email("Email inválido"),
   dataDeNascimento: z
-    .string()
-    .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Data de Nascimento deve estar no formato DD/MM/YYYY"),
+    .string(),
+
   rg: z.string().min(7, "RG é obrigatório e deve ter no mínimo 7 caracteres"),
   cpf: z
     .string()
-    .length(11, "CPF deve conter exatamente 11 dígitos")
-    .regex(/^\d{11}$/, "CPF deve conter apenas números"),
+    .min(14, "CPF deve conter 11 dígitos")
+    .refine((cpf) => sanitizeInput(cpf).length === 11, {
+      message: "CPF inválido",
+    }),
   cidade: z.string().min(1, "Cidade é obrigatória"),
   bairro: z.string().min(1, "Bairro é obrigatório"),
   nomeDaMae: z.string().min(1, "Nome da mãe é obrigatório"),
@@ -104,7 +107,7 @@ export default function Home() {
   };
 
   const handleStatusCivilChange = (event: any) => {
-    setValue("escolaridade", event);
+    setValue("estadoCivil", event);
   };
 
 
@@ -113,7 +116,6 @@ export default function Home() {
   };
 
   const handleRaceChange = (event: any) => {
-    console.log("Event", event)
     setValue("racaOuCor", event);
   };
 
